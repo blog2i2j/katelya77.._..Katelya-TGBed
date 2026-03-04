@@ -237,6 +237,39 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 4. 添加绑定：变量名 `img_url`，选择创建的命名空间
 5. 重新部署项目
 
+### 前端 UI 设计配置（跨端同步）
+
+支持在后台统一设置全站 UI 风格（首页、图库、后台、WebDAV、登录页）。
+
+**入口位置：**
+
+1. 打开管理后台：`/admin.html`
+2. 点击工具栏中的 **前端 UI 设计**（滑杆图标）
+3. 在弹窗中调整样式并点击 **保存设置**
+
+**可配置项：**
+
+- 背景图（全站 / 登录页单独）
+- 卡片透明度与模糊强度（毛玻璃效果）
+- 动态背景特效类型与强度（含移动端优化）
+
+**持久化机制：**
+
+- Cloudflare Pages：写入 KV 键 `ui_config`（通过 `img_url` 绑定访问）
+- Docker 自托管：写入 `data/ui_config.json`
+- 前端会在接口失败时降级到 `localStorage`（仅本机生效）
+
+**接口说明：**
+
+- `GET /api/ui-config`：读取配置（页面初始化自动调用）
+- `POST /api/ui-config`：保存配置（需管理员登录态）
+
+**快速排查：**
+
+- `GET /api/ui-config` 返回 `source: "default"`：表示服务端尚未保存过配置，或写入失败
+- Cloudflare 场景请确认：Pages 项目已绑定 KV（变量名必须是 `img_url`），且变更后已重新部署
+- 若保存后跨端未生效，先强制刷新页面缓存（`Ctrl+F5` / 无痕窗口），再查看 Functions 日志中的 `/api/ui-config` 请求记录
+
 ### R2 存储（大文件支持，可选）
 
 配置 R2 可支持最大 100MB 文件上传：
